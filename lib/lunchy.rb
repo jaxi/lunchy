@@ -118,24 +118,17 @@ class Lunchy
 
   def plists
     @plists ||= begin
-      plists = {}
-      dirs.each do |dir|
-        Dir["#{File.expand_path(dir)}/*.plist"].inject(plists) do |memo, filename|
-          memo[File.basename(filename, ".plist")] = filename; memo
+      dirs.map do |dir|
+        Dir["#{File.expand_path(dir)}/*.plist"].inject({}) do |memo, filename|
+          memo[File.basename(filename, ".plist")] = filename
+          memo
         end
-      end
-      plists
+      end.inject(&:merge)
     end
   end
 
   def dirs
-    result = %w(/Library/LaunchAgents ~/Library/LaunchAgents)
-    result.push('/Library/LaunchDaemons', '/System/Library/LaunchDaemons') if root?
-    result
-  end
-
-  def root?
-    Process.euid == 0
+    %w(/Library/LaunchAgents ~/Library/LaunchAgents)
   end
 
   def verbose?
